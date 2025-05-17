@@ -13,7 +13,7 @@ frame.Size = UDim2.new(1, 0, 1, 0)
 frame.ZIndex = 10
 
 -- Input Box
-local textBox = Instance.new("Enter key here..", frame)
+local textBox = Instance.new(Textbox", frame)
 textBox.Size = UDim2.new(0, 300, 0, 40)
 textBox.Position = UDim2.new(0.5, -150, 0.5, -20)
 textBox.PlaceholderText = "Enter key..."
