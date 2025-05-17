@@ -13,7 +13,7 @@ frame.Size = UDim2.new(1, 0, 1, 0)
 frame.ZIndex = 10
 
 -- Input Box
-local textBox = Instance.new(Textbox", frame)
+local textBox = Instance.new("TextBox", frame)
 textBox.Size = UDim2.new(0, 300, 0, 40)
 textBox.Position = UDim2.new(0.5, -150, 0.5, -20)
 textBox.PlaceholderText = "Enter key..."
@@ -23,22 +23,28 @@ textBox.TextColor3 = Color3.new(1,1,1)
 textBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
 Instance.new("UICorner", textBox).CornerRadius = UDim.new(0, 8)
 
--- Watermark (hidden initially)
-local watermark = Instance.new("TextLabel", screenGui)
+-- Watermark with black background
+local watermarkFrame = Instance.new("Frame", screenGui)
+watermarkFrame.AnchorPoint = Vector2.new(1, 1)
+watermarkFrame.Position = UDim2.new(1, -10, 1, -10)
+watermarkFrame.Size = UDim2.new(0, 180, 0, 25)
+watermarkFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+watermarkFrame.Visible = false
+Instance.new("UICorner", watermarkFrame).CornerRadius = UDim.new(0, 10)
+
+local watermark = Instance.new("TextLabel", watermarkFrame)
 watermark.Text = "kill aura by BensGaming"
-watermark.Position = UDim2.new(1, -180, 1, -30)
-watermark.AnchorPoint = Vector2.new(1, 1)
-watermark.Size = UDim2.new(0, 180, 0, 20)
+watermark.Size = UDim2.new(1, 0, 1, 0)
 watermark.TextSize = 14
 watermark.TextColor3 = Color3.new(1, 1, 1)
 watermark.BackgroundTransparency = 1
-watermark.Visible = false
+watermark.Font = Enum.Font.Gotham
 
 -- Key check
 textBox.FocusLost:Connect(function()
 	if textBox.Text == "bensgamingontop" then
 		frame:Destroy()
-		watermark.Visible = true
+		watermarkFrame.Visible = true
 
 		-- Kill Aura Start
 		local function getNearbyTargets()
@@ -48,7 +54,7 @@ textBox.FocusLost:Connect(function()
 			local pos = char.HumanoidRootPart.Position
 
 			for _, npc in pairs(workspace:GetDescendants()) do
-				if npc:IsA("Model") and npc:FindFirstChildOfClass("Humanoid") and npc ~= char then
+				if npc:IsA("Model") and npc ~= char and npc:FindFirstChildOfClass("Humanoid") then
 					local root = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Torso")
 					if root and (root.Position - pos).Magnitude < 20 then
 						table.insert(targets, npc)
@@ -61,11 +67,18 @@ textBox.FocusLost:Connect(function()
 
 		task.spawn(function()
 			while true do
-				task.wait(0.2)
+				task.wait(0.25)
 				for _, target in pairs(getNearbyTargets()) do
 					local hum = target:FindFirstChildOfClass("Humanoid")
 					if hum and hum.Health > 0 then
-						hum.Health = 0 -- Local kill, visible to you (real kill requires RemoteEvent or tool)
+						hum:TakeDamage(9999)
+					elseif hum and hum.Health <= 0 then
+						-- Failsafe: remove NPC if still there
+						task.delay(1, function()
+							if hum.Health <= 0 and target.Parent then
+								target:Destroy()
+							end
+						end)
 					end
 				end
 			end
